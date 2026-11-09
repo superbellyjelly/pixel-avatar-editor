@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="title">Pixel Avatar Editor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1 data-i18n="title">Pixel Avatar Editor</h1>
+      <p data-i18n="intro">Draw a 16×16 avatar, then copy the code.</p>
+    </header>
+
+    <section class="workspace" data-i18n-label="editorRegion" aria-label="Avatar editor">
+      <div class="drawing-panel">
+        <div class="toolbar" role="toolbar" data-i18n-label="tools" aria-label="Drawing tools">
+          <button id="pencil" class="active" type="button" data-i18n="pencil">Pencil (B)</button>
+          <button id="eraser" type="button" data-i18n="eraser">Eraser (E)</button>
+          <button id="picker" type="button" data-i18n="picker">Picker (I)</button>
+          <button id="undo" type="button" data-i18n="undo" aria-keyshortcuts="Control+Z Meta+Z" disabled>Undo</button>
+          <button id="clear" type="button" data-i18n="clear">Clear</button>
+          <button id="sample" type="button" data-i18n="sample">Sample</button>
+        </div>
+        <canvas id="editor" width="512" height="512" data-i18n-label="canvas" aria-label="16 by 16 pixel drawing canvas"></canvas>
+        <div id="palette" class="palette" data-i18n-label="palette" aria-label="Color palette"></div>
+      </div>
+
+      <aside>
+        <h2 data-i18n="preview">Preview</h2>
+        <div class="preview-frame">
+          <canvas id="preview" width="128" height="128" data-i18n-label="previewCanvas" aria-label="Avatar preview"></canvas>
+        </div>
+        <p id="status" role="status" data-i18n="ready">Ready.</p>
+      </aside>
+    </section>
+
+    <section class="output">
+      <label for="raw-code" data-i18n="code">Avatar code</label>
+      <div class="field-row">
+        <input id="raw-code" readonly spellcheck="false">
+        <button data-copy="raw-code" type="button" data-i18n="copy">Copy</button>
+      </div>
+
+      <details>
+        <summary data-i18n="loadExisting">Load an existing code</summary>
+        <label for="import-code" data-i18n="paste">Paste an existing code</label>
+        <div class="field-row">
+          <input id="import-code" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button id="load" type="button" data-i18n="load">Load</button>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <div id="sample-dialog" class="dialog" hidden>
+    <div class="dialog-card" role="alertdialog" aria-modal="true" aria-labelledby="sample-dialog-title">
+      <h2 id="sample-dialog-title" data-i18n="sampleWarningTitle">Replace the drawing?</h2>
+      <p id="sample-dialog-message" data-i18n="sampleWarning">Sample replaces the current avatar. This cannot be undone.</p>
+      <div class="dialog-actions">
+        <button id="sample-cancel" type="button" data-i18n="cancel">Cancel</button>
+        <button id="sample-confirm" type="button" data-i18n="sampleConfirm">Replace</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="editor.js"></script>
+</body>
+</html>
