@@ -21,9 +21,11 @@
       intro: "Draw a 16×16 avatar, then copy the code.",
       editorRegion: "Avatar editor",
       tools: "Drawing tools",
+      canvasActions: "Canvas actions",
       pencil: "Pencil (B)",
       eraser: "Eraser (E)",
       picker: "Picker (I)",
+      fill: "Fill (G)",
       undo: "Undo",
       clear: "Clear",
       sample: "Sample",
@@ -62,7 +64,7 @@
       rectChars: "Rectangle data must be lowercase.",
       rectBounds: "A rectangle is outside the avatar.",
       expectedLength: (expected, received) => `Expected ${expected} characters, received ${received}.`,
-      hexOnly: "Codes may contain lowercase hexadecimal characters only.",
+      hexOnly: "Pixel data must be lowercase letters or digits.",
       checksum: "Checksum mismatch. The avatar code is incomplete or corrupted.",
       pairs: "Compressed avatar payload must contain complete run/color pairs.",
       lowerPairs: "Compressed codes require lowercase run/color pairs.",
@@ -75,9 +77,11 @@
       intro: "16×16のアバターを描いて、コードをコピーしてください。",
       editorRegion: "アバターエディター",
       tools: "描画ツール",
+      canvasActions: "キャンバス操作",
       pencil: "ペン (B)",
       eraser: "消しゴム (E)",
       picker: "スポイト (I)",
+      fill: "塗りつぶし (G)",
       undo: "元に戻す",
       clear: "クリア",
       sample: "サンプル",
@@ -116,7 +120,7 @@
       rectChars: "矩形データは小文字にしてください。",
       rectBounds: "矩形がアバターの範囲外です。",
       expectedLength: (expected, received) => `${expected}文字必要ですが、${received}文字でした。`,
-      hexOnly: "コードは小文字の16進数だけ使えます。",
+      hexOnly: "ピクセルデータは小文字か数字だけ使えます。",
       checksum: "チェックサムが一致しません。コードが欠けているか壊れています。",
       pairs: "圧縮データの色の並びが途中で切れています。",
       lowerPairs: "圧縮コードは小文字の連長と色の組にしてください。",
@@ -156,7 +160,27 @@
     [0x73, 0xef, 0xf7, 0xff],
     [0xf4, 0xf4, 0xf4, 0xff],
     [0x94, 0xb0, 0xc2, 0xff],
-    [0x56, 0x6c, 0x86, 0xff]
+    [0x56, 0x6c, 0x86, 0xff],
+    [0xff, 0x2a, 0x6d, 0xff],
+    [0xf6, 0x75, 0x7a, 0xff],
+    [0xb5, 0x50, 0x88, 0xff],
+    [0x68, 0x38, 0x6c, 0xff],
+    [0xe8, 0xb7, 0x96, 0xff],
+    [0xc2, 0x85, 0x69, 0xff],
+    [0x8f, 0x56, 0x3b, 0xff],
+    [0x3e, 0x27, 0x31, 0xff],
+    [0xfe, 0xe7, 0x61, 0xff],
+    [0xf7, 0x76, 0x22, 0xff],
+    [0xea, 0xd4, 0xaa, 0xff],
+    [0x63, 0xc7, 0x4d, 0xff],
+    [0x26, 0x5c, 0x42, 0xff],
+    [0x19, 0x3c, 0x3e, 0xff],
+    [0x12, 0x4e, 0x89, 0xff],
+    [0x00, 0x99, 0xdb, 0xff],
+    [0xff, 0xff, 0xff, 0xff],
+    [0x18, 0x14, 0x25, 0xff],
+    [0xbe, 0x4a, 0x2f, 0xff],
+    [0xa2, 0x26, 0x33, 0xff]
   ];
 
   function checksum(body) {
@@ -173,7 +197,7 @@
     let payload = "";
     for (let index = 0; index < pixels.length; index += 1) {
       const value = pixels[index];
-      payload += value.toString(16);
+      payload += value.toString(36);
     }
     const body = HEADER + payload;
     return body + checksum(body);
@@ -193,7 +217,7 @@
       ) {
         runLength += 1;
       }
-      payload += (runLength - 1).toString(36) + color.toString(16);
+      payload += (runLength - 1).toString(36) + color.toString(36);
       index += runLength;
     }
     const body = COMPRESSED_HEADER + payload;
@@ -202,6 +226,7 @@
 
   function encodeRects(pixels) {
     validatePixels(pixels);
+    if (pixels.some(color => color > 15)) return encode(pixels);
     const covered = new Array(PIXEL_COUNT).fill(false);
     let payload = "";
     for (let start = 0; start < PIXEL_COUNT; start += 1) {
@@ -325,14 +350,17 @@
     if (code.length !== CODE_LENGTH) {
       throw new Error(t("expectedLength", CODE_LENGTH, code.length));
     }
-    if (!/^[0-9a-f]+$/.test(code.slice(HEADER.length))) {
+    const body = code.slice(0, HEADER.length + PIXEL_COUNT);
+    if (!/^[0-9a-z]+$/.test(body.slice(HEADER.length))) {
       throw new Error(t("hexOnly"));
     }
-    const body = code.slice(0, HEADER.length + PIXEL_COUNT);
+    if (!/^[0-9a-f]{4}$/.test(code.slice(-CHECKSUM_LENGTH))) {
+      throw new Error(t("checksumHex"));
+    }
     if (code.slice(-CHECKSUM_LENGTH) !== checksum(body)) {
       throw new Error(t("checksum"));
     }
-    return Array.from(body.slice(HEADER.length), value => parseInt(value, 16));
+    return Array.from(body.slice(HEADER.length), value => parseInt(value, 36));
   }
 
   function decodeCompressed(code) {
@@ -343,7 +371,7 @@
 
     const body = code.slice(0, -CHECKSUM_LENGTH);
     const payload = body.slice(COMPRESSED_HEADER.length);
-    if (!/^(?:[0-9a-z][0-9a-f])+$/.test(payload)) {
+    if (!/^(?:[0-9a-z]{2})+$/.test(payload)) {
       throw new Error(t("lowerPairs"));
     }
     if (!/^[0-9a-f]{4}$/.test(code.slice(-CHECKSUM_LENGTH))) {
@@ -356,7 +384,7 @@
     const pixels = [];
     for (let index = 0; index < payload.length; index += 2) {
       const runLength = parseInt(payload[index], 36) + 1;
-      const color = parseInt(payload[index + 1], 16);
+      const color = parseInt(payload[index + 1], 36);
       if (pixels.length + runLength > PIXEL_COUNT) {
         throw new Error(t("expandBeyond", PIXEL_COUNT));
       }
@@ -433,6 +461,7 @@
   const pencil = document.querySelector("#pencil");
   const eraser = document.querySelector("#eraser");
   const picker = document.querySelector("#picker");
+  const fill = document.querySelector("#fill");
   const paletteElement = document.querySelector("#palette");
   applyLocale();
 
@@ -540,6 +569,7 @@
     pencil.classList.toggle("active", tool === "pencil");
     eraser.classList.toggle("active", tool === "eraser");
     picker.classList.toggle("active", tool === "picker");
+    fill.classList.toggle("active", tool === "fill");
     syncCursor();
   }
 
@@ -575,15 +605,44 @@
     render();
   }
 
+  function fillAt(event) {
+    const cell = cellAt(event);
+    if (!cell) return;
+    const start = cell.y * WIDTH + cell.x;
+    const target = pixels[start];
+    if (target === selectedColor) return;
+    const stack = [start];
+    const seen = new Uint8Array(PIXEL_COUNT);
+    seen[start] = 1;
+    while (stack.length > 0) {
+      const index = stack.pop();
+      pixels[index] = selectedColor;
+      const x = index % WIDTH;
+      const y = (index - x) / WIDTH;
+      if (x > 0) consider(index - 1);
+      if (x < WIDTH - 1) consider(index + 1);
+      if (y > 0) consider(index - WIDTH);
+      if (y < HEIGHT - 1) consider(index + WIDTH);
+    }
+    render();
+
+    function consider(index) {
+      if (seen[index] || pixels[index] !== target) return;
+      seen[index] = 1;
+      stack.push(index);
+    }
+  }
+
   PALETTE.forEach((color, index) => {
     const swatch = document.createElement("button");
     swatch.type = "button";
     swatch.className = `swatch${index === selectedColor ? " selected" : ""}${index === 0 ? " transparent" : ""}`;
-    swatch.title = index === 0 ? t("transparent") : t("paletteColor", index.toString(16));
+    swatch.title = index === 0 ? t("transparent") : t("paletteColor", index.toString(36));
     swatch.setAttribute("aria-label", swatch.title);
     if (index !== 0) swatch.style.background = rgba(index);
     swatch.addEventListener("click", () => {
       selectColor(index);
+      if (tool === "fill") return;
       useTool(index === 0 ? "eraser" : "pencil");
     });
     paletteElement.appendChild(swatch);
@@ -601,12 +660,13 @@
   }
 
   editor.addEventListener("pointerdown", event => {
-    drawing = wantsPick(event) ? "pick" : "draw";
+    drawing = wantsPick(event) ? "pick" : tool === "fill" ? "fill" : "draw";
     if (drawing === "pick") pickAt(event);
     else {
       strokeBefore = pixels.slice();
       syncUndo();
-      drawAt(event);
+      if (drawing === "fill") fillAt(event);
+      else drawAt(event);
     }
     try { editor.setPointerCapture(event.pointerId); } catch (error) { /* Pointer capture needs a real pointer. */ }
   });
@@ -621,6 +681,7 @@
   pencil.addEventListener("click", () => useTool("pencil"));
   eraser.addEventListener("click", () => useTool("eraser"));
   picker.addEventListener("click", () => useTool("picker"));
+  fill.addEventListener("click", () => useTool("fill"));
   undoButton.addEventListener("click", undo);
 
   window.addEventListener("keydown", event => {
@@ -647,6 +708,7 @@
     if (key === "b") useTool("pencil");
     else if (key === "e") useTool("eraser");
     else if (key === "i") useTool("picker");
+    else if (key === "g") useTool("fill");
     else return;
     event.preventDefault();
   });
@@ -750,5 +812,19 @@
     });
   });
 
+  function fitEditor() {
+    const panel = editor.closest(".drawing-panel");
+    const panelStyle = getComputedStyle(panel);
+    const available = panel.clientWidth
+      - parseFloat(panelStyle.paddingLeft)
+      - parseFloat(panelStyle.paddingRight)
+      - 6;
+    const size = Math.max(16, Math.floor(available / 16) * 16);
+    editor.style.width = `${size}px`;
+    editor.style.height = `${size}px`;
+  }
+
+  fitEditor();
+  window.addEventListener("resize", fitEditor);
   render();
 }(typeof globalThis !== "undefined" ? globalThis : this));

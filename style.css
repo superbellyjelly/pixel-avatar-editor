@@ -57,7 +57,7 @@ h2 {
   margin-top: 32px;
 }
 
-.drawing-panel, aside, .output {
+.drawing-panel, aside {
   padding: 20px;
   border: 3px solid var(--teal);
   border-radius: 2px;
@@ -65,13 +65,24 @@ h2 {
   box-shadow: 4px 4px 0 #0c0e0d;
 }
 
-.toolbar, .field-row {
+.field-row {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
 }
 
-.toolbar { flex-wrap: wrap; }
+.canvas-actions, .drawing-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.drawing-tools { margin-bottom: 12px; }
+
+.canvas-actions {
+  justify-content: flex-end;
+  margin-top: 12px;
+}
 
 button {
   min-height: 38px;
@@ -109,22 +120,25 @@ button:disabled:hover {
   cursor: default;
 }
 
+.canvas-square {
+  width: fit-content;
+  max-width: 100%;
+  border: 3px solid var(--teal);
+  line-height: 0;
+}
+
 #editor {
   display: block;
-  width: min(100%, 512px);
-  height: auto;
+  box-sizing: content-box;
+  width: 512px;
+  height: 512px;
   image-rendering: pixelated;
   touch-action: none;
-  border: 3px solid var(--teal);
+  border: 0;
   cursor: crosshair;
   background-color: #d8d8df;
-  background-image:
-    linear-gradient(45deg, #aeb0bc 25%, transparent 25%),
-    linear-gradient(-45deg, #aeb0bc 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #aeb0bc 75%),
-    linear-gradient(-45deg, transparent 75%, #aeb0bc 75%);
-  background-size: 32px 32px;
-  background-position: 0 0, 0 16px, 16px -16px, -16px 0;
+  background-image: repeating-conic-gradient(#aeb0bc 0% 25%, #d8d8df 0% 50%);
+  background-size: 12.5% 12.5%;
 }
 
 #editor.picking {
@@ -133,8 +147,8 @@ button:disabled:hover {
 
 .palette {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 6px;
   margin-top: 14px;
 }
 
@@ -174,7 +188,7 @@ button:disabled:hover {
 #status { margin: 14px 0 0; min-height: 1.5em; color: var(--pale); }
 #status.error { color: #e87848; }
 
-.output { margin-top: 24px; }
+aside label:first-of-type { margin-top: 18px; }
 label {
   display: block;
   margin: 12px 0 6px;
@@ -241,6 +255,5 @@ code { color: var(--pale); }
 
 @media (max-width: 760px) {
   .workspace { grid-template-columns: 1fr; }
-  .toolbar { flex-wrap: wrap; }
   .field-row { align-items: stretch; }
 }

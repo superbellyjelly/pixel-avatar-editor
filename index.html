@@ -15,15 +15,20 @@
 
     <section class="workspace" data-i18n-label="editorRegion" aria-label="Avatar editor">
       <div class="drawing-panel">
-        <div class="toolbar" role="toolbar" data-i18n-label="tools" aria-label="Drawing tools">
+        <div class="drawing-tools" role="toolbar" data-i18n-label="tools" aria-label="Drawing tools">
           <button id="pencil" class="active" type="button" data-i18n="pencil">Pencil (B)</button>
           <button id="eraser" type="button" data-i18n="eraser">Eraser (E)</button>
           <button id="picker" type="button" data-i18n="picker">Picker (I)</button>
+          <button id="fill" type="button" data-i18n="fill">Fill (G)</button>
+        </div>
+        <div class="canvas-square">
+          <canvas id="editor" width="512" height="512" data-i18n-label="canvas" aria-label="16 by 16 pixel drawing canvas"></canvas>
+        </div>
+        <div class="canvas-actions" role="toolbar" data-i18n-label="canvasActions" aria-label="Canvas actions">
           <button id="undo" type="button" data-i18n="undo" aria-keyshortcuts="Control+Z Meta+Z" disabled>Undo</button>
           <button id="clear" type="button" data-i18n="clear">Clear</button>
           <button id="sample" type="button" data-i18n="sample">Sample</button>
         </div>
-        <canvas id="editor" width="512" height="512" data-i18n-label="canvas" aria-label="16 by 16 pixel drawing canvas"></canvas>
         <div id="palette" class="palette" data-i18n-label="palette" aria-label="Color palette"></div>
       </div>
 
@@ -33,24 +38,22 @@
           <canvas id="preview" width="128" height="128" data-i18n-label="previewCanvas" aria-label="Avatar preview"></canvas>
         </div>
         <p id="status" role="status" data-i18n="ready">Ready.</p>
-      </aside>
-    </section>
 
-    <section class="output">
-      <label for="raw-code" data-i18n="code">Avatar code</label>
-      <div class="field-row">
-        <input id="raw-code" readonly spellcheck="false">
-        <button data-copy="raw-code" type="button" data-i18n="copy">Copy</button>
-      </div>
-
-      <details>
-        <summary data-i18n="loadExisting">Load an existing code</summary>
-        <label for="import-code" data-i18n="paste">Paste an existing code</label>
+        <label for="raw-code" data-i18n="code">Avatar code</label>
         <div class="field-row">
-          <input id="import-code" autocomplete="off" autocapitalize="off" spellcheck="false">
-          <button id="load" type="button" data-i18n="load">Load</button>
+          <input id="raw-code" readonly spellcheck="false">
+          <button data-copy="raw-code" type="button" data-i18n="copy">Copy</button>
         </div>
-      </details>
+
+        <details>
+          <summary data-i18n="loadExisting">Load an existing code</summary>
+          <label for="import-code" data-i18n="paste">Paste an existing code</label>
+          <div class="field-row">
+            <input id="import-code" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button id="load" type="button" data-i18n="load">Load</button>
+          </div>
+        </details>
+      </aside>
     </section>
   </main>
 
